@@ -10,6 +10,12 @@ end
 gem 'rails', '~> 5.0.7', '>= 5.0.7.2'
 # Use sqlite3 as the database for Active Record
 gem 'sqlite3', '~> 1.3.13', group: [:development, :test]
+
+group :production do
+  gem 'pg', '~> 0.18'
+  gem 'rails_12factor'
+end
+
 # Use Puma as the app server
 gem 'puma', '~> 3.0'
 # Use SCSS for stylesheets
