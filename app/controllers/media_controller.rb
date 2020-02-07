@@ -1,8 +1,10 @@
 class MediaController < ApplicationController
 
   skip_before_filter :verify_authenticity_token, :only => [:recieve_webhook, :save_marketplace]
+  before_filter :set_headers
 
   def recieve_webhook
+    headers['Access-Control-Allow-Origin'] = '*'
     puts params
 
     order = ShopifyAPI::Order.find params["id"]
@@ -20,5 +22,19 @@ class MediaController < ApplicationController
 
     render json: params
   end
+
+  private
+
+    def set_headers
+      headers['Access-Control-Allow-Origin'] = '*'
+      headers['Access-Control-Request-Method'] = '*'
+    end
+
+    def cors_set_access_control_headers
+      headers['Access-Control-Allow-Origin'] = '*'
+      headers['Access-Control-Allow-Methods'] = 'POST, PUT, DELETE, GET, PATCH, OPTIONS'
+      headers['Access-Control-Request-Method'] = '*'
+      headers['Access-Control-Allow-Headers'] = 'Origin, X-Requested-With, Content-Type, Accept, Authorization'
+    end
 
 end
