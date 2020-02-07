@@ -1,7 +1,7 @@
 class MediaController < ApplicationController
 
   skip_before_filter :verify_authenticity_token, :only => [:recieve_webhook, :save_marketplace]
-  before_filter :set_headers
+  before_filter :cors_set_access_control_headers
 
   def recieve_webhook
     headers['Access-Control-Allow-Origin'] = '*'
