@@ -1,22 +1,55 @@
 class Media
 
   def self.transfer_files(customer, variant)
-    media_metafield = variant.metafields.select{|m| m.namespace == "witty" and m.key == "media"}.first
+    media_title_metafields = variant.metafields.select{|m| m.namespace == "witty" and m.key == "media_title"}.first
+    media_image_metafields = variant.metafields.select{|m| m.namespace == "witty" and m.key == "media_image"}.first
+    media_metafields = variant.metafields.select{|m| m.namespace == "accentuate" and m.key == "media"}.first
+
+    media_titles = JSON.parse media_title_metafields.value
+    media_images = JSON.parse media_image_metafields.value
+    medias = JSON.parse media_metafields.value
+
+    for i in (0..medias.count-1)
+      if media_images[i]&.first
+        media_image = media_images[i]&.first["src"].split('?')&.first
+      else
+        media_image = nil
+      end
+
+      if medias[i]&.first
+        media = medias[i]&.first["src"].split('?')&.first
+      else
+        media = nil
+      end
+
+      transfer_single_file(media_titles[i], media_image, media, customer, variant)
+    end
+  end
+
+  def self.transfer_single_file(title, image, media, customer, variant)
+
     customer_metafield = customer.metafields.select{|m| m.namespace == "witty" and m.key == "media_library"}.first
     product = ShopifyAPI::Product.find variant.product_id
-    image = product.images.select{|i| i.id == variant.image_id }.first
 
-    unless image
-      image = product.images.first
+    if title.blank?
+      title = product.title
+    end
+
+    if image.blank?
+      image = product.images.select{|i| i.id == variant.image_id }.first
+
+      unless image
+        image = product.images.first.src
+      end
     end
 
     if image
-      media_metafield_info = media_metafield.value + '}{' + product.title + '==' + image&.src
+      media_metafield_info = media + '}{' + title + '==' + image
     else
-      media_metafield_info = media_metafield.value + '}{' + product.title
+      media_metafield_info = media + '}{' + title
     end
 
-    if media_metafield
+    if media
       if customer_metafield
         puts Colorize.magenta("metafield exists")
         customer_metafield.value = customer_metafield.value.add_tag media_metafield_info
@@ -33,6 +66,7 @@ class Media
     else
       puts Colorize.cyan("nothing to transfer")
     end
+
   end
 
   def self.compare_order(order)
@@ -85,7 +119,7 @@ class Media
       puts Colorize.yellow(inventory_level.location_id)
     end
   end
-  
+
   def self.save_marketplace(customer, params)
     customer_metafield = customer.metafields.select{|m| m.namespace == "witty" and m.key == "media_library"}.first
     product = ShopifyAPI::Product.find params["product_id"]
