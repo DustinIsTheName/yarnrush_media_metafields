@@ -9,6 +9,7 @@ class MediaController < ApplicationController
 
     order = ShopifyAPI::Order.find params["id"]
     Media.compare_order(order)
+    Media.fulfill_order(order)
 
     head :ok
   end
