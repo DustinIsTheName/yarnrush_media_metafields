@@ -117,6 +117,8 @@ class Media
       end
 
       puts Colorize.yellow(inventory_level.location_id)
+
+      f.save
     end
   end
 
